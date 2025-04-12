@@ -2,20 +2,17 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import models, schemas, crud, database
+from .config import settings
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "*",
-]
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -15,15 +15,21 @@ function App() {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("dark") === "true");
   const [isLoading, setIsLoading] = useState(false);
 
-  const backend = "http://localhost:8000";
+  const backend = import.meta.env.VITE_API_URL;
 
   const fetchTodos = async () => {
     setIsLoading(true);
     try {
       const res = await axios.get(`${backend}/todos${filter !== "all" ? `?status=${filter}` : ""}`);
-      setTodos(res.data);
+      if (Array.isArray(res.data)) {
+        setTodos(res.data);
+      } else {
+        console.error("Unexpected data shape from API:", res.data);
+        setTodos([]); // fallback to empty
+      }
     } catch (err) {
       console.error("Failed to fetch todos", err);
+      setTodos([]); // fallback on error
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +162,7 @@ function App() {
         </div>
       ) : (
         <ul className="todo-list">
-          {todos.map((todo) => (
+          {Array.isArray(todos) && todos.map((todo) => (
             <li key={todo.id} className="todo-item">
               <div 
                 className={`todo-content ${todo.completed ? "completed" : ""}`}
@@ -183,7 +189,7 @@ function App() {
         </ul>
       )}
 
-      {todos.length > 0 && (
+      {Array.isArray(todos) && todos.length > 0 && (
         <div className="counter">
           {todos.filter(t => !t.completed).length} items left
         </div>
